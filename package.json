@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "test": "standard && istanbul cover ./node_modules/.bin/tape tests/**/*.js"
+  },
+  "devDependencies": {
+    "istanbul": "^0.4.2",
+    "portfinder": "^1.0.3",
+    "request": "^2.69.0",
+    "standard": "^6.0.8",
+    "tape": "^4.5.1"
+  }
+}
