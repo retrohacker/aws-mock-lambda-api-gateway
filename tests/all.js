@@ -241,7 +241,7 @@ test('Gateway calls lambda function and success returns', function (t) {
       t.equal(resp.statusCode, 200, 'statusCode should be 200')
       t.deepEqual(body,
                  requestObject,
-                 'event and requestObject should have the same values')
+                 'body and requestObject should have the same values')
       cleanupConnections(server)
     })
   })
@@ -264,7 +264,7 @@ test('Gateway handles fail', function (t) {
                'event and requestObject should have the same values')
 
     // Pass it back through and make sure the request gets it
-    context.fail(requestObject)
+    context.fail(JSON.stringify(requestObject))
   }
 
   var opts = {
@@ -288,9 +288,11 @@ test('Gateway handles fail', function (t) {
       t.error(e, 'Request should complete')
       if (e) return cleanupConnections(server)
       t.equal(resp.statusCode, 500, 'statusCode should be 500')
+      // Since we are using `json: true` with request, we will get the body
+      // back as an object, thus deepEqual
       t.deepEqual(body,
-                 requestObject,
-                 'event and requestObject should have the same values')
+                  requestObject,
+                  'body and requestObject should have the same values')
       cleanupConnections(server)
     })
   })
@@ -339,7 +341,7 @@ test('Gateway.done handles success', function (t) {
       t.equal(resp.statusCode, 200, 'statusCode should be 200')
       t.deepEqual(body,
                  requestObject,
-                 'event and requestObject should have the same values')
+                 'body and requestObject should have the same values')
       cleanupConnections(server)
     })
   })
@@ -362,7 +364,7 @@ test('Gateway.done handles failure', function (t) {
                'event and requestObject should have the same values')
 
     // Pass it back through and make sure the request gets it
-    context.done(requestObject)
+    context.done(JSON.stringify(requestObject))
   }
 
   var opts = {
@@ -386,9 +388,11 @@ test('Gateway.done handles failure', function (t) {
       t.error(e, 'Request should complete')
       if (e) return cleanupConnections(server)
       t.equal(resp.statusCode, 500, 'statusCode should be 500')
+      // Since we are using `json: true` with request, we will get the body
+      // back as an object, thus deepEqual
       t.deepEqual(body,
-                 requestObject,
-                 'event and requestObject should have the same values')
+                  requestObject,
+                  'body and requestObject should have the same values')
       cleanupConnections(server)
     })
   })
@@ -480,6 +484,68 @@ test('Gateway picks from multiple routes', function (t) {
       t.error(e, 'Request should complete')
       if (e) return cleanupConnections(server)
       t.equal(resp.statusCode, 200, 'statusCode should be 200')
+      cleanupConnections(server)
+    })
+  })
+})
+
+test('Gateway uses toString for fail', function (t) {
+  t.plan(6)
+
+  // This object will be passed through the request and back to make sure that
+  // requests are getting serialized into events and back
+  var requestObject = {
+    'foo': 'bar',
+    'fizz': 'buzz'
+  }
+
+  // We are going to return this when .toString() is called on the
+  // requestObject. It will ensure the mock gateway is calling .toString and
+  // not trying to serialize the returned value into JSON
+  var requestObjectString = 'fizzbuzz'
+
+  // We use Object.defineProperty here to prevent deepEqual et.al. from picking
+  // up the toString object. We want to ensure mockGateway is calling .toString
+  // and not JSON.stringify on context.fail
+  Object.defineProperty(requestObject, 'toString', {
+    enumerable: false,
+    value: function () { return requestObjectString }
+  })
+
+  function lambda (event, context) {
+    // Make sure the requestObject is passed through to the event
+    t.deepEqual(event,
+               requestObject,
+               'event and requestObject should have the same values')
+
+    // Pass it back through and make sure the request gets it
+    context.fail(requestObject)
+  }
+
+  var opts = {
+    routes: [{
+      method: 'POST',
+      route: '/metrics',
+      lambda: lambda
+    }],
+    listen: port
+  }
+
+  mockGateway.init(opts, function serverListening (e, server) {
+    t.error(e, 'Server should startup')
+    t.ok(server, 'Should return a valid server object')
+    request({
+      url: 'http://127.0.0.1:' + port + '/metrics',
+      method: 'POST',
+      body: requestObject,
+      json: true
+    }, function requestCompleted (e, resp, body) {
+      t.error(e, 'Request should complete')
+      if (e) return cleanupConnections(server)
+      t.equal(resp.statusCode, 500, 'statusCode should be 500')
+      t.equal(body,
+              requestObjectString,
+              'toString should have been called on context.fail')
       cleanupConnections(server)
     })
   })

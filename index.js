@@ -93,7 +93,7 @@ module.exports.init = function init (opts, cb) {
     }
     context.fail = function fail (obj) {
       resp.statusCode = 500
-      return resp.end(JSON.stringify(obj))
+      return resp.end(obj.toString())
     }
     context.done = function done (e, obj) {
       if (e) return context.fail(e)
