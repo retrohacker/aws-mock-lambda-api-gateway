@@ -8,5 +8,27 @@
     "request": "^2.69.0",
     "standard": "^6.0.8",
     "tape": "^4.5.1"
-  }
+  },
+  "name": "aws-mock-lambda-api-gateway",
+  "description": "AWS Mock Lambda API Gateway",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/retrohacker/aws-mock-lambda-gateway"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "api-gateway"
+  ],
+  "author": "William Blankenship <william.jblankenship@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/retrohacker/aws-mock-lambda-gateway/issues"
+  },
+  "homepage": "https://github.com/retrohacker/aws-mock-lambda-gateway"
 }
