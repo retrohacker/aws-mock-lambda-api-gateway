@@ -100,7 +100,8 @@ module.exports.init = function init (opts, cb) {
       return resp.end(JSON.stringify(obj))
     }
     context.fail = function fail (obj) {
-      var response = obj.toString()
+      // Escape the response around quotes to protect the retunred JSON
+      var response = obj.toString().replace(/"/g, '\\"')
       var status = 200 // return a 200 by default
       // Iterate through all the responses to see if one matches
       for (var i = 0; i < route.responses.length; i++) {
@@ -110,7 +111,7 @@ module.exports.init = function init (opts, cb) {
         }
       }
       resp.statusCode = status
-      return resp.end(response)
+      return resp.end('{ "error" : "' + response + '" }')
     }
     context.done = function done (e, obj) {
       if (e) return context.fail(e)

@@ -257,6 +257,8 @@ test('Gateway handles fail', function (t) {
     'fizz': 'buzz'
   }
 
+  var error = 'fizzbuzzboofar'
+
   function lambda (event, context) {
     // Make sure the requestObject is passed through to the event
     t.deepEqual(event,
@@ -264,7 +266,7 @@ test('Gateway handles fail', function (t) {
                'event and requestObject should have the same values')
 
     // Pass it back through and make sure the request gets it
-    context.fail(JSON.stringify(requestObject))
+    context.fail(error)
   }
 
   var opts = {
@@ -291,7 +293,7 @@ test('Gateway handles fail', function (t) {
       // Since we are using `json: true` with request, we will get the body
       // back as an object, thus deepEqual
       t.deepEqual(body,
-                  requestObject,
+                  {error: error},
                   'body and requestObject should have the same values')
       cleanupConnections(server)
     })
@@ -357,14 +359,16 @@ test('Gateway.done handles failure', function (t) {
     'fizz': 'buzz'
   }
 
+  var error = 'plasticbeach'
+
   function lambda (event, context) {
     // Make sure the requestObject is passed through to the event
     t.deepEqual(event,
-               requestObject,
-               'event and requestObject should have the same values')
+                requestObject,
+                'event and requestObject should have the same values')
 
     // Pass it back through and make sure the request gets it
-    context.done(JSON.stringify(requestObject))
+    context.done(error)
   }
 
   var opts = {
@@ -391,7 +395,7 @@ test('Gateway.done handles failure', function (t) {
       // Since we are using `json: true` with request, we will get the body
       // back as an object, thus deepEqual
       t.deepEqual(body,
-                  requestObject,
+                  {error: error},
                   'body and requestObject should have the same values')
       cleanupConnections(server)
     })
@@ -543,9 +547,9 @@ test('Gateway uses toString for fail', function (t) {
       t.error(e, 'Request should complete')
       if (e) return cleanupConnections(server)
       t.equal(resp.statusCode, 200, 'statusCode should be 200')
-      t.equal(body,
-              requestObjectString,
-              'toString should have been called on context.fail')
+      t.deepEqual(body,
+                  {error: requestObjectString},
+                  'toString should have been called on context.fail')
       cleanupConnections(server)
     })
   })
@@ -657,6 +661,49 @@ test('Gateway selects proper response from responses array', function (t) {
       t.error(e, 'Request should complete')
       if (e) return cleanupConnections(server)
       t.equal(resp.statusCode, 123, 'statusCode should be 123')
+      cleanupConnections(server)
+    })
+  })
+})
+
+test('Gateway returns property on fail', function (t) {
+  t.plan(6)
+
+  var requestObject = {
+    'foo': 'bar',
+    'fizz': 'buzz'
+  }
+
+  var error = 'Invalid Request: foobarbizzfuzz'
+
+  function lambda (event, context) {
+    context.fail(error)
+  }
+
+  var opts = {
+    routes: [{
+      method: 'POST',
+      route: '/metrics',
+      lambda: lambda
+    }],
+    listen: port
+  }
+
+  mockGateway.init(opts, function serverListening (e, server) {
+    t.error(e, 'Server should startup')
+    t.ok(server, 'Should return a valid server object')
+    request({
+      url: 'http://127.0.0.1:' + port + '/metrics',
+      method: 'POST',
+      body: requestObject,
+      json: true
+    }, function requestCompleted (e, resp, body) {
+      t.error(e, 'Request should complete')
+      if (e) return cleanupConnections(server)
+      t.equal(resp.statusCode, 200, 'statusCode should be 123')
+      if (body == null) return null
+      t.ok(body.error, 'body.error is defined')
+      t.equal(body.error, error, 'Error message is correct')
       cleanupConnections(server)
     })
   })

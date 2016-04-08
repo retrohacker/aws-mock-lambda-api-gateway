@@ -70,12 +70,21 @@ The objects of the `responses` array take the following form:
 
 The first matching `regex` in the array will be used. If you want to change the default of 200, provide a "catch all" regular expression as the last element of the array.
 
+The object passed back in the response will be in the form of:
+
+```javascript
+{
+  "error" : [MESSAGE]
+}
+```
+Note that double quotes will automatically be escaped in `[MESSAGE]`
+
 ## `context` object
 
 The context object currently has the following keys:
 
 `context.succeed(obj)`: This will return a 200 statusCode
-`context.fail(obj)`: This will return a 500 statusCode
+`context.fail(obj)`: This will be handled by your responses array
 `context.done(e, obj)`: Combines behaviour of `fail` and `succeed` via `e`
 
 ## `event` object
