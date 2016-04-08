@@ -74,7 +74,7 @@ The object passed back in the response will be in the form of:
 
 ```javascript
 {
-  "error" : [MESSAGE]
+  "errorMessage" : [MESSAGE]
 }
 ```
 Note that double quotes will automatically be escaped in `[MESSAGE]`

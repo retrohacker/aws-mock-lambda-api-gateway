@@ -293,7 +293,7 @@ test('Gateway handles fail', function (t) {
       // Since we are using `json: true` with request, we will get the body
       // back as an object, thus deepEqual
       t.deepEqual(body,
-                  {error: error},
+                  {errorMessage: error},
                   'body and requestObject should have the same values')
       cleanupConnections(server)
     })
@@ -395,7 +395,7 @@ test('Gateway.done handles failure', function (t) {
       // Since we are using `json: true` with request, we will get the body
       // back as an object, thus deepEqual
       t.deepEqual(body,
-                  {error: error},
+                  {errorMessage: error},
                   'body and requestObject should have the same values')
       cleanupConnections(server)
     })
@@ -548,7 +548,7 @@ test('Gateway uses toString for fail', function (t) {
       if (e) return cleanupConnections(server)
       t.equal(resp.statusCode, 200, 'statusCode should be 200')
       t.deepEqual(body,
-                  {error: requestObjectString},
+                  {errorMessage: requestObjectString},
                   'toString should have been called on context.fail')
       cleanupConnections(server)
     })
@@ -702,8 +702,8 @@ test('Gateway returns property on fail', function (t) {
       if (e) return cleanupConnections(server)
       t.equal(resp.statusCode, 200, 'statusCode should be 123')
       if (body == null) return null
-      t.ok(body.error, 'body.error is defined')
-      t.equal(body.error, error, 'Error message is correct')
+      t.ok(body.errorMessage, 'body.error is defined')
+      t.equal(body.errorMessage, error, 'Error message is correct')
       cleanupConnections(server)
     })
   })

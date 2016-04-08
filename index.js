@@ -111,7 +111,7 @@ module.exports.init = function init (opts, cb) {
         }
       }
       resp.statusCode = status
-      return resp.end('{ "error" : "' + response + '" }')
+      return resp.end('{ "errorMessage" : "' + response + '" }')
     }
     context.done = function done (e, obj) {
       if (e) return context.fail(e)
