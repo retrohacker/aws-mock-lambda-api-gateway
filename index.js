@@ -16,7 +16,7 @@ module.exports.init = function init (opts, cb) {
     return cb(new Error('`opts` must be an object'))
   }
 
-  if (!opts.listen) {
+  if (opts.listen == null) {
     return cb(new Error('`listen` is required'))
   }
 
@@ -40,27 +40,27 @@ module.exports.init = function init (opts, cb) {
     }
   }
 
-  if (opts.routes && !(opts.routes instanceof Array)) {
+  if (opts.routes != null && !(opts.routes instanceof Array)) {
     return cb(new Error('`routes` must be an array if present'))
   }
 
-  if (opts.routes) {
+  if (opts.routes != null) {
     // Note that i was already defined above (function level scope in js)
     for (i = 0; i < opts.routes.length; i++) {
-      if (!opts.routes[i].method) {
+      if (opts.routes[i].method == null) {
         return cb(new Error('`routes` object must define a `method`'))
       }
-      if (!opts.routes[i].lambda) {
+      if (opts.routes[i].lambda == null) {
         return cb(new Error('`routes` object must define `lambda` function'))
       }
-      if (!opts.routes[i].route) {
+      if (opts.routes[i].route == null) {
         return cb(new Error('`routes` object must define `route`'))
       }
     }
   }
 
   // Make sure that opts.routes is an array to simplify logic further down
-  if (!opts.routes) opts.routes = []
+  if (opts.routes == null) opts.routes = []
 
   /* End scrubbing input */
 
@@ -80,7 +80,7 @@ module.exports.init = function init (opts, cb) {
     }
 
     // We didn't find a route in the above method
-    if (!lambda) {
+    if (lambda == null) {
       resp.statusCode = 404
       return resp.end()
     }
