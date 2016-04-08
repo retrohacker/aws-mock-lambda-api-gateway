@@ -56,6 +56,14 @@ module.exports.init = function init (opts, cb) {
       if (opts.routes[i].route == null) {
         return cb(new Error('`routes` object must define `route`'))
       }
+      // Make sure that responses is an array and defined, simplifies logic
+      // further down the page
+      if (opts.routes[i].responses == null) {
+        opts.routes[i].responses = []
+      }
+      if (Object.prototype.toString.call(opts.routes[i].responses) !== '[object Array]') {
+        return cb(new Error('`routes` objects `responses` key must be array'))
+      }
     }
   }
 
@@ -67,20 +75,20 @@ module.exports.init = function init (opts, cb) {
   var server = http.createServer(function incommingMessage (req, resp) {
     // Search for a route that maps to the incomming request. If we don't
     // have a route that handles the request, we will return a 404
-    var lambda = null
+    var route = null
 
     // Note that i was already defined above (function level scope in js)
     // Also, this could be optimized by using a map if speed becomes an issue
     for (i = 0; i < opts.routes.length; i++) {
       if (req.method === opts.routes[i].method &&
           url.parse(req.url).path === opts.routes[i].route) {
-        lambda = opts.routes[i].lambda
+        route = opts.routes[i]
         break // We don't need to check the rest, we found are route
       }
     }
 
     // We didn't find a route in the above method
-    if (lambda == null) {
+    if (route == null) {
       resp.statusCode = 404
       return resp.end()
     }
@@ -92,8 +100,17 @@ module.exports.init = function init (opts, cb) {
       return resp.end(JSON.stringify(obj))
     }
     context.fail = function fail (obj) {
-      resp.statusCode = 500
-      return resp.end(obj.toString())
+      var response = obj.toString()
+      var status = 200 // return a 200 by default
+      // Iterate through all the responses to see if one matches
+      for (var i = 0; i < route.responses.length; i++) {
+        if (route.responses[i].regex.test(response)) {
+          status = route.responses[i].status
+          break
+        }
+      }
+      resp.statusCode = status
+      return resp.end(response)
     }
     context.done = function done (e, obj) {
       if (e) return context.fail(e)
@@ -121,7 +138,7 @@ module.exports.init = function init (opts, cb) {
         resp.statusCode = 500
         return resp.end()
       }
-      return lambda(event, context)
+      return route.lambda(event, context)
     })
   })
 

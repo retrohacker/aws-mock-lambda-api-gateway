@@ -48,13 +48,27 @@ The `routes` array contains a collection of objects that map an HTTP route to a 
 
 ```javascript
 {
-  method: 'POST',          // I.E. 'GET', 'POST', 'PUT', etc (required)
-  route: '/metrics/value', // Only exact matches get routed (required)
-  lambda: function (event, context) {}
+  method: 'POST',                       // I.E. 'GET', 'POST', 'PUT', etc (required)
+  route: '/metrics/value',              // Only exact matches get routed (required)
+  lambda: function (event, context) {}, // Your lambda function (required)
+  responses: []                         // Defined below (optional)
 }
 ```
 
 We do not support timeouts, if your lambda function stalls, the request will hang.
+
+`responses` is an array of objects that maps the value passed out of your lambda function back to an HTTP method response. This is a combination of the behaviours of Method Response and Integration Response from the API Gateway. 200 is always the default when none of the provided responses map to your Lambda's returned value. Not including this will result in all responses being 200.
+
+The objects of the `responses` array take the following form:
+
+```javascript
+{
+  regex: {}, // A RegExp object or duck type of RegExp
+  status: xxx, // HTTP Status Code that will be returned. Will be coersed to an integer.
+}
+```
+
+The first matching `regex` in the array will be used. If you want to change the default of 200, provide a "catch all" regular expression as the last element of the array.
 
 ## `context` object
 

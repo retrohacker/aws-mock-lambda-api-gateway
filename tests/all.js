@@ -287,7 +287,7 @@ test('Gateway handles fail', function (t) {
     }, function requestCompleted (e, resp, body) {
       t.error(e, 'Request should complete')
       if (e) return cleanupConnections(server)
-      t.equal(resp.statusCode, 500, 'statusCode should be 500')
+      t.equal(resp.statusCode, 200, 'statusCode should be 200')
       // Since we are using `json: true` with request, we will get the body
       // back as an object, thus deepEqual
       t.deepEqual(body,
@@ -387,7 +387,7 @@ test('Gateway.done handles failure', function (t) {
     }, function requestCompleted (e, resp, body) {
       t.error(e, 'Request should complete')
       if (e) return cleanupConnections(server)
-      t.equal(resp.statusCode, 500, 'statusCode should be 500')
+      t.equal(resp.statusCode, 200, 'statusCode should be 200')
       // Since we are using `json: true` with request, we will get the body
       // back as an object, thus deepEqual
       t.deepEqual(body,
@@ -542,10 +542,121 @@ test('Gateway uses toString for fail', function (t) {
     }, function requestCompleted (e, resp, body) {
       t.error(e, 'Request should complete')
       if (e) return cleanupConnections(server)
-      t.equal(resp.statusCode, 500, 'statusCode should be 500')
+      t.equal(resp.statusCode, 200, 'statusCode should be 200')
       t.equal(body,
               requestObjectString,
               'toString should have been called on context.fail')
+      cleanupConnections(server)
+    })
+  })
+})
+
+test('Gateway honors responses array', function (t) {
+  t.plan(4)
+
+  // This object will be passed through the request and back to make sure that
+  // requests are getting serialized into events and back
+  var requestObject = {
+    'foo': 'bar',
+    'fizz': 'buzz'
+  }
+
+  function lambda (event, context) {
+    context.fail('Invalid Request: foobarbizzfuzz')
+  }
+
+  var opts = {
+    routes: [{
+      method: 'POST',
+      route: '/metrics',
+      lambda: lambda,
+      responses: [{
+        regex: /^Invalid Request:.*/,
+        status: 123
+      }]
+    }],
+    listen: port
+  }
+
+  mockGateway.init(opts, function serverListening (e, server) {
+    t.error(e, 'Server should startup')
+    t.ok(server, 'Should return a valid server object')
+    request({
+      url: 'http://127.0.0.1:' + port + '/metrics',
+      method: 'POST',
+      body: requestObject,
+      json: true
+    }, function requestCompleted (e, resp, body) {
+      t.error(e, 'Request should complete')
+      if (e) return cleanupConnections(server)
+      t.equal(resp.statusCode, 123, 'statusCode should be 123')
+      cleanupConnections(server)
+    })
+  })
+})
+
+test('Gateway enforces Array type for responses array', function (t) {
+  t.plan(2)
+
+  var opts = {
+    routes: [{
+      method: 'POST',
+      route: '/metrics',
+      lambda: function () {},
+      responses: false
+    }],
+    listen: port
+  }
+
+  mockGateway.init(opts, function serverListening (e, server) {
+    t.ok(e, 'Should return an error')
+    if (e == null) return null
+    t.equal(e.message, '`routes` objects `responses` key must be array')
+  })
+})
+
+test('Gateway selects proper response from responses array', function (t) {
+  t.plan(4)
+
+  // This object will be passed through the request and back to make sure that
+  // requests are getting serialized into events and back
+  var requestObject = {
+    'foo': 'bar',
+    'fizz': 'buzz'
+  }
+
+  function lambda (event, context) {
+    context.fail('Invalid Request: foobarbizzfuzz')
+  }
+
+  var opts = {
+    routes: [{
+      method: 'POST',
+      route: '/metrics',
+      lambda: lambda,
+      responses: [{
+        regex: /^foobarbizzfuzz.*$/,
+        status: 321
+      }, {
+        regex: /^Invalid Request:.*$/,
+        status: 123
+      }]
+    }],
+    listen: port
+  }
+
+  mockGateway.init(opts, function serverListening (e, server) {
+    t.error(e, 'Server should startup')
+    t.ok(server, 'Should return a valid server object')
+    request({
+      url: 'http://127.0.0.1:' + port + '/metrics',
+      method: 'POST',
+      body: requestObject,
+      json: true
+    }, function requestCompleted (e, resp, body) {
+      t.error(e, 'Request should complete')
+      if (e) return cleanupConnections(server)
+      t.equal(resp.statusCode, 123, 'statusCode should be 123')
       cleanupConnections(server)
     })
   })
