@@ -11,7 +11,7 @@
   },
   "name": "aws-mock-lambda-api-gateway",
   "description": "AWS Mock Lambda API Gateway",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "main": "index.js",
   "directories": {
     "test": "tests"
