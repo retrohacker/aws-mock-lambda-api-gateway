@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/retrohacker/aws-mock-lambda-gateway"
+    "url": "https://github.com/retrohacker/aws-mock-lambda-api-gateway"
   },
   "keywords": [
     "aws",
@@ -28,7 +28,7 @@
   "author": "William Blankenship <william.jblankenship@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/retrohacker/aws-mock-lambda-gateway/issues"
+    "url": "https://github.com/retrohacker/aws-mock-lambda-api-gateway/issues"
   },
-  "homepage": "https://github.com/retrohacker/aws-mock-lambda-gateway"
+  "homepage": "https://github.com/retrohacker/aws-mock-lambda-api-gateway"
 }
