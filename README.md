@@ -1,5 +1,11 @@
 AWS Mock Lambda API Gateway
 ===========================
+<br>
+<br>
+> # YOU SHOULD PROBABLY BE USING https://github.com/lambci/docker-lambda
+
+<br>
+<br>
 
 It can often be difficult to run your AWS Lambda Functions locally.
 
