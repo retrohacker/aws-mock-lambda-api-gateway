@@ -1,5 +1,7 @@
 AWS Mock Lambda API Gateway
 ===========================
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/retrohacker/aws-mock-lambda-api-gateway.svg)](https://greenkeeper.io/)
 <br>
 <br>
 > # YOU SHOULD PROBABLY BE USING https://github.com/lambci/docker-lambda
